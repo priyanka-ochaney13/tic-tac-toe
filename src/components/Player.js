@@ -1,5 +1,5 @@
 import { useState } from 'react';
-export default function Player({name, symbol}) {
+export default function Player({name, symbol, isActive}) {
     const [playerName, setPlayerName] = useState(name);
     const handleChange = (event) => {
         setPlayerName(event.target.value);
@@ -17,8 +17,9 @@ export default function Player({name, symbol}) {
     }
     // If the player is editing, show an input field instead of the name
     // If the player is not editing, show the name
+
     return (
-    <li>
+    <li className={isActive ? 'active' : undefined}>
         <span className='player'>
           {editablePlayerName}
           <span className='player-symbol'>{symbol}</span>

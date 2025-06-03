@@ -1,5 +1,5 @@
 import { useState } from 'react';
-export default function Player({name, symbol, isActive}) {
+export default function Player({name, symbol, isActive, onChangeName}) {
     const [playerName, setPlayerName] = useState(name);
     const handleChange = (event) => {
         setPlayerName(event.target.value);
@@ -9,6 +9,9 @@ export default function Player({name, symbol, isActive}) {
         //setIsEditing(!isEditing); creates a delay in the state update as it is scheduled for future that delay can be by 1-2ms 
         // This is because the state update is asynchronous
         setIsEditing((editing) => !editing);
+        if(isEditing) {
+            onChangeName(symbol, playerName);
+        }
     }
 
     let editablePlayerName = <span className='player-name'>{playerName}</span>;

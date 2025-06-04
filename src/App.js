@@ -1,10 +1,11 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import './App.css';
 import Player from './components/Player.js';
 import GameBoard from './components/GameBoard.js';
 import Log from './components/Log.js';
 import { WINNING_COMBINATIONS } from "./winning-combinations.js";
 import GameOver from "./components/GameOver.js";
+import GameBot from "./components/GameBot.js";
 
 const initialGameBoard = [
     [null, null, null],
@@ -38,16 +39,27 @@ function getWinner(gameBoard, players) {
   }
   return winner;
 }
+
 function App() {
+
+  const [playWithBot, setPlayWithBot] = useState(false);
+
   const [players, setPlayers] = useState({
     'X' : 'Player 1',
-    'O' : 'Player 2',
+    'O' : playWithBot ? 'Bot' : 'Player 2',
   });
 
   const [gameTurns, setGameTurns] = useState([]);
 
   //const [activePlayer, setActivePlayer] = useState('X');
   const activePlayer = getActivePlayer(gameTurns);
+
+  useEffect(() => {
+    setPlayers(prevPlayers => ({
+      ...prevPlayers,
+      'O': playWithBot ? 'Bot' : 'Player 2'
+    }));
+  }, [playWithBot]);
 
   let gameBoard = [...initialGameBoard.map(array => [...array])];
 
@@ -61,8 +73,19 @@ function App() {
   }
 
   const winner = getWinner(gameBoard, players);
-
   const hasDraw = gameTurns.length === 9 && !winner;
+
+  useEffect(() => {
+    if (playWithBot && activePlayer === 'O' && !winner && !hasDraw) {
+      const timer = setTimeout(() => {
+        const move = GameBot({ board: gameBoard, currentPlayer: 'O' });
+        if (move) {
+          handleSelectCell(move.row, move.col);
+        }
+      }, 500); // Delay for bot's move
+      return () => clearTimeout(timer);
+    }
+  }, [activePlayer, gameBoard, playWithBot, winner, hasDraw]);
 
   function handleSelectCell(rowIndex, colIndex) {
     //setActivePlayer((currActivePlayer) => currActivePlayer === 'X' ? 'O' : 'X');
@@ -83,6 +106,8 @@ function App() {
   }
 
   function handlePlayerNameChange(symbol, newName) {
+    if (playWithBot && symbol === 'O') return; // Prevent changing bot's name
+
     setPlayers(prevPlayers => {
       return {
         ...prevPlayers,
@@ -90,27 +115,41 @@ function App() {
       };
     });
   }
+
   return (
     <main>
       <div id='game-container'>
         <ol id='players' className='highlight-player'>
           <Player 
-            name='Player 1' 
+            name={players['X']}
             symbol='X' 
             isActive={activePlayer === 'X'}
             onChangeName={handlePlayerNameChange}
           />
           <Player 
-            name='Player 2' 
+            name={players['O']}
             symbol='O' 
             isActive={activePlayer === 'O'}
             onChangeName={handlePlayerNameChange}
+            isBot={playWithBot}
           />
+          <div className="game-options">
+            <label>
+              <input 
+                type="checkbox" 
+                checked={playWithBot} 
+                onChange={() => setPlayWithBot(!playWithBot)} 
+                disabled={gameTurns.length > 0} //disable if game has started
+              />
+              Play with Bot
+            </label>
+        </div>
         </ol>
         { (winner || hasDraw) && <GameOver winner={winner} onRematch={handleRematch}/>}
         <GameBoard 
           onSelectCell={handleSelectCell} 
           board={gameBoard}
+          disabled={playWithBot && activePlayer === 'O'} // Disable board during bot's turn
         />
       </div>
       <Log turns={gameTurns}/>

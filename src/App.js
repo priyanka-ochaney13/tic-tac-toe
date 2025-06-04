@@ -1,4 +1,4 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useMemo } from "react";
 import './App.css';
 import Player from './components/Player.js';
 import GameBoard from './components/GameBoard.js';
@@ -61,16 +61,17 @@ function App() {
     }));
   }, [playWithBot]);
 
-  let gameBoard = [...initialGameBoard.map(array => [...array])];
-
-  for(const turn of gameTurns) {
-    const { square, player } = turn; 
-    const { row, col } = square;
-
-    if (gameBoard[row][col] === null) {
-        gameBoard[row][col] = player;
+  const gameBoard = useMemo(() => {
+    const board = initialGameBoard.map(array => [...array]);
+    for (const turn of gameTurns) {
+      const { square, player } = turn;
+      const { row, col } = square;
+      if (board[row][col] === null) {
+        board[row][col] = player;
+      }
     }
-  }
+    return board;
+  }, [gameTurns]);
 
   const winner = getWinner(gameBoard, players);
   const hasDraw = gameTurns.length === 9 && !winner;

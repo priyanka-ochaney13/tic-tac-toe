@@ -7,7 +7,7 @@ A simple Tic-Tac-Toe game built with React.
 ## Deployment
 
 - **Live Demo:** [https://triplecross.netlify.app/](https://triplecross.netlify.app/)
-- **AI Agent Version:** _Upcoming_
+- **With Bot Version:** [https://tirplecross-withbot.netlify.app/](https://tirplecross-withbot.netlify.app/)
 
 ---
 
